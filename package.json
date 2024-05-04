@@ -1,0 +1,25 @@
+{
+  "name": "trash-tastic",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "NODE_ENV=development nodemon src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@types/date-fns": "^2.6.0",
+    "@types/node-schedule": "^2.1.7",
+    "date-fns": "^3.6.0",
+    "dotenv": "^16.4.5",
+    "node-schedule": "^2.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0",
+    "ts-node": "^10.9.2"
+  }
+}
