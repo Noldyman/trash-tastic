@@ -33,7 +33,8 @@ const sendTrashReminder = async () => {
 
 const startApp = () => {
   const rule = new schedule.RecurrenceRule();
-  rule.hour = 20;
+  rule.hour = 19;
+  rule.minute = 30;
   rule.tz = "Europe/Amsterdam";
 
   schedule.scheduleJob(rule, sendTrashReminder);
