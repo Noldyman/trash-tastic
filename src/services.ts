@@ -5,7 +5,6 @@ const env = {
   streetNumber: process.env.STREET_NUMBER,
   serverBaseUrl: process.env.SERVER_BASE_URL,
   hassPort: process.env.HASS_PORT,
-  hassAccessToken: process.env.HASS_ACCESS_TOKEN,
   webhookId: process.env.WEBHOOK_ID,
 };
 
