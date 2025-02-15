@@ -6,6 +6,7 @@ const env = {
   serverBaseUrl: process.env.SERVER_BASE_URL,
   hassPort: process.env.HASS_PORT,
   hassAccessToken: process.env.HASS_ACCESS_TOKEN,
+  webhookId: process.env.WEBHOOK_ID,
 };
 
 export const getAddressInfo = async (): Promise<AddressInfo> => {
@@ -15,8 +16,12 @@ export const getAddressInfo = async (): Promise<AddressInfo> => {
   return (await response.json())[0];
 };
 
-export const getWasteStreams = async (bagId: string): Promise<WasteStream[]> => {
-  const response = await fetch(`https://afvalkalender.dar.nl/rest/adressen/${bagId}/afvalstromen`);
+export const getWasteStreams = async (
+  bagId: string
+): Promise<WasteStream[]> => {
+  const response = await fetch(
+    `https://afvalkalender.dar.nl/rest/adressen/${bagId}/afvalstromen`
+  );
   return await response.json();
 };
 
@@ -27,20 +32,25 @@ export const getPickupDates = async (bagId: string): Promise<PickupDate[]> => {
   return await response.json();
 };
 
-export const sendPushNotification = async (pickupsTomorrow: string[]) => {
-  const payload = {
-    title: "Trash-tastic",
-    message: `The following waste streams will be picked up tomorrow: ${pickupsTomorrow.join(
-      ", "
-    )}.`,
+type WebhookPayload = {
+  enableButtons: {
+    rest: boolean;
+    pmd: boolean;
+    gft: boolean;
+    paper: boolean;
   };
+  wasteStreams: string[];
+};
 
-  await fetch(`${env.serverBaseUrl}:${env.hassPort}/api/services/notify/mobile_app_iphone_6`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${env.hassAccessToken}`,
-    },
-    body: JSON.stringify(payload),
-  });
+export const triggerWebhook = async (payload: WebhookPayload) => {
+  await fetch(
+    `${env.serverBaseUrl}:${env.hassPort}/api/webhook/${env.webhookId}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }
+  );
 };

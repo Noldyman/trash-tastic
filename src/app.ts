@@ -1,7 +1,20 @@
 require("dotenv").config();
 import schedule from "node-schedule";
-import { getAddressInfo, getWasteStreams, getPickupDates, sendPushNotification } from "./services";
+import {
+  getAddressInfo,
+  getWasteStreams,
+  getPickupDates,
+  triggerWebhook,
+} from "./services";
 import { add, format } from "date-fns";
+
+export type HassButtonName = "gft" | "pmd" | "paper" | "rest";
+const idMap: { [k: number]: HassButtonName } = {
+  1: "gft",
+  3: "pmd",
+  4: "paper",
+  5: "rest",
+};
 
 const sendTrashReminder = async () => {
   try {
@@ -13,18 +26,32 @@ const sendTrashReminder = async () => {
 
     const tomorrowsDate = format(add(new Date(), { days: 1 }), "yyyy-MM-dd");
 
+    const enableButtons: { [k in HassButtonName]: boolean } = {
+      rest: false,
+      pmd: false,
+      gft: false,
+      paper: false,
+    };
     const pickupsTomorrow = pickupDates
       .filter(({ ophaaldatum }) => ophaaldatum === tomorrowsDate)
       .reduce((acc, { afvalstroom_id }) => {
-        const wasteStream = wasteStreams.find(({ id }) => id === afvalstroom_id);
+        const wasteStream = wasteStreams.find(
+          ({ id }) => id === afvalstroom_id
+        );
         if (wasteStream) {
           acc.push(wasteStream.title);
+          if (idMap[wasteStream.id]) {
+            enableButtons[idMap[wasteStream.id]] = true;
+          }
         }
         return acc;
       }, [] as string[]);
 
     if (pickupsTomorrow.length) {
-      await sendPushNotification(pickupsTomorrow);
+      await triggerWebhook({
+        enableButtons,
+        wasteStreams: pickupsTomorrow,
+      });
     }
   } catch (err) {
     console.log("Something went wrong:", JSON.stringify(err));
@@ -33,7 +60,7 @@ const sendTrashReminder = async () => {
 
 const startApp = () => {
   const rule = new schedule.RecurrenceRule();
-  rule.hour = 19;
+  rule.hour = 17;
   rule.minute = 30;
   rule.tz = "Europe/Amsterdam";
 
